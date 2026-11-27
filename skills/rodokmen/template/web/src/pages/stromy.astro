@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import { config } from '../lib/data.js';
+const stromy = config.stromy ?? [];
+---
+<Base title="Malované stromy">
+  <h1>Malované stromy</h1>
+  <p class="lead">Rodokmen ve staré podobě – kartičky předků na malovaném stromě. Klepnutím otevřete obrázek v plném rozlišení, vhodný i k vytištění. Na přímých liniích má osoba, po které linie jde, červený rámeček.</p>
+  {stromy.length === 0 && <p class="muted">Malované stromy zatím nejsou.</p>}
+  {stromy.map((s) => (
+    <section class="strom">
+      <h2>{s.nazev}</h2>
+      {s.popis && <p>{s.popis}</p>}
+      <a href={`/stromy/${s.soubor}.jpg`} target="_blank" rel="noopener">
+        <img src={`/stromy/${s.soubor}_nahled.jpg`} alt={s.nazev} loading="lazy" />
+      </a>
+      <p class="small"><a href={`/stromy/${s.soubor}.jpg`} download>Stáhnout v plném rozlišení (JPG k tisku)</a></p>
+    </section>
+  ))}
+  {config.stromy_poznamka && <p class="small muted">{config.stromy_poznamka}</p>}
+  <p class="small muted">Údaje na kartičkách pocházejí z rodokmenu; podrobnosti u každé osoby najdete ve <a href="/vejir/">vějíři předků</a>.</p>
+</Base>
+
+<style>
+  .strom { margin: 2rem 0; }
+  .strom img { width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+</style>

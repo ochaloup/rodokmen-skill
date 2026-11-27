@@ -1,12 +1,12 @@
 ---
 import '../styles/global.css';
-import { config } from '../lib/data.js';
+import { config, docs } from '../lib/data.js';
 const siteName = config.nazev || 'Rodokmen';
 const { title, description = config.popis || siteName, wide = false, wider = false, full = false } = Astro.props;
 const path = Astro.url.pathname;
 const groups = [
   [['/', 'Úvod'], ...(config.maPribeh ? [['/pribehy/', config.pribeh?.menu || 'Příběh rodu']] : []), ['/zajimavosti/', 'Zajímavosti']],
-  [['/rody/', 'Rody'], ['/mapa/', 'Mapa'], ['/vejir/', 'Vějíř'], ['/predci/', 'Předci'], ['/zapisy/', 'Zápisy'], ['/hledame/', 'Co hledáme']],
+  [['/rody/', 'Rody'], ['/mapa/', 'Mapa'], ['/vejir/', 'Vějíř'], ['/predci/', 'Předci'], ['/zapisy/', 'Zápisy'], ...(docs.length ? [['/dokumenty/', 'Dokumenty']] : []), ['/hledame/', 'Co hledáme']],
   [['/hledat/', 'Hledat']],
 ];
 const current = (url) => ((url === '/' ? path === '/' : path.startsWith(url)) ? 'page' : undefined);
@@ -45,6 +45,7 @@ const current = (url) => ((url === '/' ? path === '/' : path.startsWith(url)) ? 
     </main>
     {!full && <footer class="site-footer">
       {config.zapati || 'Dohledáno v digitalizovaných matrikách'} · rodinný web, neveřejný
+      {path === '/' && <> · aktualizováno {new Date().toLocaleDateString('cs-CZ', { timeZone: 'Europe/Prague' })}</>}
     </footer>}
   </body>
 </html>

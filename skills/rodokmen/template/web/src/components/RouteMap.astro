@@ -1,0 +1,58 @@
+---
+// Mapa tras (Leaflet + OpenStreetMap): očíslované zastávky spojené čarou, jedna barva na osobu.
+import 'leaflet/dist/leaflet.css';
+const { trasy = [], height = '65vh' } = Astro.props;
+const payload = JSON.stringify(trasy);
+---
+<div class="rmap" style={`height:${height}`} data-trasy={payload}></div>
+<div class="rmap-legend">
+  {trasy.map((t) => (
+    <label><input type="checkbox" data-trasa={t.jmeno} checked /><span class="dot" style={`background:${t.barva}`}></span>{t.jmeno}</label>
+  ))}
+</div>
+
+<script>
+  import L from 'leaflet';
+  const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+  for (const el of document.querySelectorAll<HTMLElement>('.rmap')) {
+    const trasy = JSON.parse(el.dataset.trasy!);
+    const map = L.map(el, { scrollWheelZoom: false });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+    const groups: Record<string, L.LayerGroup> = {};
+    const bounds: L.LatLngExpression[] = [];
+    for (const t of trasy) {
+      const g = L.layerGroup().addTo(map);
+      groups[t.jmeno] = g;
+      const pts = t.body.map((b: [number, number, string, string]) => [b[0], b[1]] as L.LatLngExpression);
+      L.polyline(pts, { color: t.barva, weight: 3, opacity: 0.8, dashArray: '6 6' }).addTo(g);
+      t.body.forEach((b: [number, number, string, string], i: number) => {
+        const icon = L.divIcon({ className: 'rmap-n', html: `<span style="background:${esc(t.barva)}">${i + 1}</span>`, iconSize: [22, 22] });
+        L.marker([b[0], b[1]], { icon })
+          .bindPopup(`<strong>${i + 1}. ${esc(b[2])}</strong><br>${esc(b[3])}<br><span class="y">${esc(t.jmeno)}</span>`)
+          .bindTooltip(`${i + 1}. ${esc(b[2])}`)
+          .addTo(g);
+        bounds.push([b[0], b[1]]);
+      });
+    }
+    if (bounds.length) map.fitBounds(L.latLngBounds(bounds), { padding: [20, 20] });
+    el.parentElement?.querySelectorAll<HTMLInputElement>('.rmap-legend input[data-trasa]').forEach((cb) =>
+      cb.addEventListener('change', () => {
+        const g = groups[cb.dataset.trasa!];
+        if (g) cb.checked ? g.addTo(map) : g.remove();
+      })
+    );
+  }
+</script>
+
+<style is:global>
+  .rmap { width: 100%; border: 1px solid var(--line); border-radius: 12px; z-index: 0; margin: 1rem 0 0; }
+  .rmap-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin: 0.6rem 0 1.2rem; font-size: 0.9rem; }
+  .rmap-legend label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+  .rmap-legend .dot { width: 0.8rem; height: 0.8rem; border-radius: 50%; border: 1px solid #3b2e22; }
+  .rmap-n span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid #3b2e22;
+    color: #fff; font: 700 0.75rem system-ui, sans-serif; }
+</style>

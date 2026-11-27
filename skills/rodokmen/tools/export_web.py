@@ -67,6 +67,26 @@ def strip_comments(md):
     return re.sub(r"<!--.*?-->\n?", "", md, flags=re.S)
 
 
+def person_stories():
+    """data/pribehy_osob.md: oddíly „## <Kekulé číslo> Jméno“ → {číslo: (markdown, html)}."""
+    path = os.path.join(DATA, "pribehy_osob.md")
+    if not os.path.exists(path):
+        return {}
+    parts = re.split(r"^## +(\d+)\b[^\n]*\n", re.sub(r"<!--.*?-->", "", open(path, encoding="utf-8").read(), flags=re.S), flags=re.M)
+    out = {}
+    for k, body in zip(parts[1::2], parts[2::2]):
+        paras = [p.strip() for p in re.split(r"\n\s*\n", body.strip()) if p.strip()]
+        if not paras:
+            continue
+        def inline(t):
+            t = html.escape(t, quote=False)
+            t = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2">\1</a>', t)
+            t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
+            return re.sub(r"(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])", r"<em>\1</em>", t)
+        out[int(k)] = (body, "".join(f"<p>{inline(' '.join(p.split()))}</p>" for p in paras))
+    return out
+
+
 def slugify(text):
     t = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
     return re.sub(r"[^a-z0-9]+", "-", t).strip("-")
@@ -237,6 +257,7 @@ def main():
                  "Nastavte prihlaseni.odpoved, nebo (jen když to opravdu chcete) prihlaseni.otevreny: true.")
     docs_cfg = jload("dokumenty.json", [])
     recs = {r["key"]: r for r in record_rows()}
+    stories = person_stories()
 
     slugs, used = {}, set()
     for k in sorted(P):
@@ -275,13 +296,14 @@ def main():
         people[slugs[k]] = dict(
             k=k, slug=slugs[k], name=p["n"], y=p.get("y", ""), years=years(p.get("y")), st=p.get("st", "unk"),
             status=STATUS.get(p.get("st"), ""), gen=gen(k), sex="M" if k == 1 and p.get("sex", "M") == "M" or k > 1 and k % 2 == 0 else "F",
-            rel=relation(k), line=line_of(k), facts=p.get("f", []), note=p.get("note", ""), records=[r for r in p.get("r", []) if r in recs],
+            rel=relation(k), line=line_of(k), facts=p.get("f", []), note=p.get("note", ""),
+            story=stories.get(k, ("", ""))[1], records=[r for r in p.get("r", []) if r in recs],
             father=slugs.get(2 * k), mother=slugs.get(2 * k + 1),
             fatherUnknown=(2 * k in P and placeholder(P[2 * k])), motherUnknown=(2 * k + 1 in P and placeholder(P[2 * k + 1])),
             child=slugs.get(k // 2) if k > 1 else None, spouse=slugs.get(k ^ 1) if k > 1 else None,
             family=None, ownFamily=None, path=path,
             side=[dict(name=s["n"], text=s.get("t", ""), records=[r for r in s.get("r", []) if r in recs]) for s in SIDE if s["k"] == k],
-            docs=[dict(img=d["img"], caption=d.get("popis", "")) for d in docs_cfg if k in d.get("osoby", [])],
+            docs=[dict(img=d["img"], caption=d.get("popis", ""), set=d.get("sada", "")) for d in docs_cfg if k in d.get("osoby", [])],
             children=[slugs[c] for c in [k // 2] + [a // 2 for a in aliases_of.get(k, [])] if k > 1 and c in slugs],
             also=[dict(k=a, rel=relation(a), line=line_of(a), child=slugs.get(a // 2)) for a in aliases_of.get(k, [])],
         )
@@ -385,17 +407,34 @@ def main():
                 issues=[dict(title=i, text="") if isinstance(i, str) else dict(title=i[0], text=i[1]) for i in ISSUES
                         if isinstance(i, str) or (isinstance(i, (tuple, list)) and len(i) == 2)],   # jiné hlásí kontrola.py
                 stats=stats, hypotheses=hypotheses,
-                docs=[dict(img=d["img"], caption=d.get("popis", ""), people=[slugs[k] for k in d.get("osoby", []) if k in slugs])
+                docs=[dict(img=d["img"], caption=d.get("popis", ""), set=d.get("sada", ""), people=[slugs[k] for k in d.get("osoby", []) if k in slugs])
                       for d in docs_cfg if os.path.exists(os.path.join(VYREZY, d["img"] + ".jpg"))])
 
     write(os.path.join(WEB, "src", "data", "site.json"), json.dumps(site, ensure_ascii=False, indent=1))
     gen_dir = os.path.join(WEB, "src", "generated")
-    for src, dst in (("archivni_dotazy.md", "dotazy.md"), ("research_log.md", "denik.md"), ("zajimavosti.md", "zajimavosti.md")):
+    for src, dst in (("archivni_dotazy.md", "dotazy.md"), ("research_log.md", "denik.md"), ("zajimavosti.md", "zajimavosti.md"),
+                     ("rodina_a_archiv.md", "rodina_a_archiv.md")):
         path = os.path.join(DATA, src)
         text = open(path, encoding="utf-8-sig").read() if os.path.exists(path) else ""
         write(os.path.join(gen_dir, dst), strip_comments(re.sub(r"^# .*\n", "", text, count=1)))
     story = os.path.join(DATA, "pribeh.md")
     write(os.path.join(gen_dir, "pribeh.md"), strip_comments(open(story, encoding="utf-8-sig").read()) if has_story else "---\ntitle: Příběh\nlead: ''\n---\n")
+    pages_dir, pages_gen = os.path.join(DATA, "stranky"), os.path.join(gen_dir, "stranky")
+    os.makedirs(pages_gen, exist_ok=True)
+    page_files = sorted(f for f in os.listdir(pages_dir) if f.endswith(".md")) if os.path.isdir(pages_dir) else []
+    for f in os.listdir(pages_gen):
+        if f not in page_files:
+            os.remove(os.path.join(pages_gen, f))
+    for f in page_files:
+        write(os.path.join(pages_gen, f), strip_comments(open(os.path.join(pages_dir, f), encoding="utf-8-sig").read()))
+        img_src = os.path.join(ROOT, "dokumenty", "stranky", f[:-3])
+        if os.path.isdir(img_src):
+            img_dst = os.path.join(WEB, "public", "stranky", f[:-3])
+            os.makedirs(img_dst, exist_ok=True)
+            for im in os.listdir(img_src):
+                s, d = os.path.join(img_src, im), os.path.join(img_dst, im)
+                if not os.path.exists(d) or os.path.getmtime(s) > os.path.getmtime(d):
+                    shutil.copy2(s, d)
 
     hrefs = os.path.join(gen_dir, "fan_hrefs.json")
     json.dump({k: f"/osoba/{s}/" for k, s in slugs.items()}, open(hrefs, "w", encoding="utf-8", newline="\n"))
@@ -430,9 +469,19 @@ def main():
 
     # odkazy v textech, které nikam nevedou (adresa osoby se změní třeba doplněním roku narození: jan-novak → jan-novak-1798)
     targets = dict(osoba=people, zdroj=recs, rod=lines, rodina=families)
-    texts = {f: open(os.path.join(gen_dir, f), encoding="utf-8").read() for f in ("pribeh.md", "zajimavosti.md")}
+    texts = {f: open(os.path.join(gen_dir, f), encoding="utf-8").read() for f in ("pribeh.md", "zajimavosti.md", "rodina_a_archiv.md")}
+    texts.update({f"stranky/{f}": open(os.path.join(pages_gen, f), encoding="utf-8").read() for f in page_files})
     texts["web.json"] = json.dumps(cfg, ensure_ascii=False)
     texts["osoby.py (hypotézy)"] = json.dumps(hypotheses, ensure_ascii=False)
+    texts["pribehy_osob.md"] = "\n".join(md for md, _ in stories.values())
+    pribehy_py = os.path.join(ROOT, "tools", "pribehy.py")
+    if os.path.exists(pribehy_py):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("pribehy", pribehy_py)
+        pribehy = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(pribehy)
+        for k, n in pribehy.stale(P, SIDE):
+            print(f"POZOR: příběh osoby {k} ({n}) neodpovídá datům – zkontroluj ho, pak tools/pribehy.py otisk {k}")
     broken = [(f, m.group(0)) for f, t in texts.items()
               for m in re.finditer(r"/(osoba|zdroj|rod|rodina)/([^/\s)\"'#?<>\]]+)", t) if m.group(2) not in targets[m.group(1)]]
     for f, link in dict.fromkeys(broken):

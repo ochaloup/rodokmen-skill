@@ -72,3 +72,22 @@ jde později doplnit. `kontrola.py` na to upozorní. Uživateli to nabídni, i k
 - Poctivě: co nevíme, napiš jako otázku nebo domněnku („nejspíš“, „podle rodiny“). Nic nevymýšlej kvůli plynulosti.
 - Na konci kapitola o dnešku: jen jména a vztahy žijících, bez podrobností.
 - Ostatní rody dostanou svůj prostor na stránkách rodů (popis v `LINES`, `HYPOTEZY`) a v zajímavostech.
+
+## Příběhy osob
+Každá doložená osoba může mít na své stránce krátký příběh „Co o něm/ní víme“: `data/pribehy_osob.md`, oddíl na osobu
+`## <číslo> Jméno <!-- otisk:xxxxxxxx -->` a pod ním 1–3 odstavce (odkazy na osoby `[Jan](/osoba/jan-novak-1801/)`).
+Píše se z fakt, zápisů, rodičů, partnera a bočních příbuzných – nic nedomýšlet, nejistotu říct („nejspíš“, „(?)“).
+U velkých událostí (svatba, úmrtí, převzetí gruntu) stačí věk v závorce, např. „se oženil (32 let)“, 1–2× na příběh.
+- **Otisk:** shrnuje data osoby a nejbližší rodiny. Když se data změní, `kontrola.py` i `npm run data` hlásí příběh jako
+  zastaralý. Po každé změně osoby v `osoby.py` (fakta, rodiče, partner, boční příbuzní) příběh zkontroluj, uprav a zapiš
+  nový otisk: `python3 -I tools/pribehy.py otisk <číslo>`. Nová osoba = nový příběh.
+- `pribehy.py stav` – zastaralé příběhy, osoby bez příběhu a roky v příběhu, které v datech nejsou (ověřené z jiného
+  zdroje zapiš do oddílu `<!-- roky ověřeny: 1791 (rodinná kniha) -->`); `pribehy.py podklady <výstup.md> <čísla>` –
+  podklady pro psaní; `pribehy.py rod <8–15>` – osoby rodu, které příběh mají mít.
+- Adresa osoby se mění s rokem narození (`/osoba/jan-novak-1801/`): po doplnění roku hlásí `npm run data`
+  „nefunkční odkaz“ – oprav ho v příbězích a zajímavostech podle `web/src/data/site.json`.
+
+## Rodina a archiv
+Volitelný `data/rodina_a_archiv.md`: co říkají rodinné doklady a co matriky, kde se liší a co rodina nevěděla.
+Když existuje, stránka Zajímavosti se jmenuje „Zajímavosti a archiv“ a tento text je nahoře.
+

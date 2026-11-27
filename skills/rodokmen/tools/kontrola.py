@@ -39,6 +39,14 @@ def main():
     except Exception as e:  # noqa: BLE001
         sys.exit(f"CHYBA: data/osoby.py nejde načíst: {e}")
     P, SIDE, LINES, SAME = ns.get("P", {}), ns.get("SIDE", []), ns.get("LINES", {}), ns.get("SAME", {})
+    src = open(os.path.join(DATA, "osoby.py"), encoding="utf-8-sig").read()
+    m = re.search(r"^P\s*=\s*(?:\{|dict\()", src, re.M)
+    blok = src[m.end():] if m else ""
+    konec = re.search(r"^[})]", blok, re.M)
+    cisla = re.findall(r"^\s{1,8}(\d+)\s*:", blok[:konec.start()] if konec else blok, re.M)
+    dvoji = sorted({k for k in cisla if cisla.count(k) > 1}, key=int)
+    if dvoji:
+        err.append(f"osoba je v data/osoby.py dvakrát (druhý zápis tiše přepíše první): {', '.join(dvoji)}")
     zaz = jload("zaznamy.json", [])
     svazky, prep, hl = jload("svazky.json", {}), jload("prepisy.json", {}), jload("zvyrazneni.json", {})
     keys = [z.get("klic") for z in zaz]
@@ -55,6 +63,12 @@ def main():
             continue
         if k > 1 and k // 2 not in P and k not in SAME:
             warn.append(f"osoba {k} ({p.get('n')}): v rodokmenu chybí její dítě {k // 2} – je číslo správně?")
+        jm = re.sub(r"\(.*?\)", "", p.get("n", "")).split()
+        if k > 1 and jm and "neuveden" not in p.get("n", "") and jm[0] not in ("Ilja", "Nikola", "Saša", "Luca"):
+            zena = jm[0][-1] in "aeáé"   # ženská křestní jména končí -a/-e (Anna, Marie), mužská ne (Jan, Jiří)
+            if zena != (k % 2 == 1):
+                err.append(f"osoba {k} ({p.get('n')}): číslo {'sudé = otec' if k % 2 == 0 else 'liché = matka'}, "
+                           f"ale jméno vypadá na {'ženu' if zena else 'muže'} – nejsou rodiče prohození?")
         st = p.get("st", "unk")
         if st not in ("doc", "prob", "fam", "mh", "unk"):
             err.append(f"osoba {k}: neznámý stav '{st}'")
@@ -248,7 +262,8 @@ def main():
         dolozena = set().union(*(cisla_zaz.get(r, set()) | cisla_domu(str(prep.get(r, {}).get("orig", "")))
                                  | cisla_domu(str(prep.get(r, {}).get("cs", ""))) for r in zapisy))
         fakta = [f for f in p.get("f", []) if isinstance(f, str)   # „(podle stromu)“, „(z vyprávění)“ = zdroj označený
-                 and not re.search(r"\([^)]*\b(?:strom|vyprávění|rodin)", f, re.I)]
+                 and not re.search(r"\([^)]*\b(?:strom|vyprávění|rodin|pozemkov|kronik|PK \d|kniha|literatur)"
+                                   r"|\([NOZ] [^)]*\b(?:pag|str|sn)\.", f, re.I)]
         for c in sorted(set(re.findall(r"čp\.\s*(\d+)", " ".join(fakta))) - dolozena, key=int):
             warn.append(f"osoba {k} ({p.get('n')}): čp. {c} není v žádném citovaném zápisu – ověřit, "
                         "nebo označit zdroj (strom, vyprávění)")
@@ -298,7 +313,7 @@ def main():
         roky = [int(y) for y in re.findall(r"\b1[5-9]\d\d|20\d\d\b", p.get("y", "") + " " + text)]
         texty.append((f"osoba {k}", text + (f" {hranice}" if roky and min(roky) >= 1870 or k < 8 else "")))
     texty += [(f"boční příbuzný {s.get('n')}", s.get("n", "") + " " + s.get("t", "")) for s in SIDE]
-    for f in ("zajimavosti.md", "pribeh.md"):
+    for f in ("zajimavosti.md", "pribeh.md", "pribehy_osob.md"):
         if os.path.exists(os.path.join(DATA, f)):
             obsah = open(os.path.join(DATA, f), encoding="utf-8-sig").read()
             texty += [(f, odst) for odst in re.split(r"\n\s*\n|\n(?=#)", obsah)]   # odstavce i oddíly „## …“
@@ -321,6 +336,16 @@ def main():
         if n >= 6:
             warn.append(f"rod {jmeno} má už {n} generací – je čas napsat příběh rodu "
                         f"(data/pribeh.md, reference/pribehy.md); koncept nejdřív ukaž uživateli v chatu")
+
+    pribehy_py = os.path.join(ROOT, "tools", "pribehy.py")
+    if os.path.exists(pribehy_py):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("pribehy", pribehy_py)
+        pribehy = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(pribehy)
+        for k, n in pribehy.stale(P, SIDE):
+            warn.append(f"příběh osoby {k} ({n}) neodpovídá datům – zkontroluj a uprav data/pribehy_osob.md, "
+                        f"pak `python3 -I tools/pribehy.py otisk {k}`")
 
     log = os.path.join(DATA, "research_log.md")
     rows = sum(1 for l in open(log, encoding="utf-8-sig") if re.match(r"^\| \d+ \|", l)) if os.path.exists(log) else 0

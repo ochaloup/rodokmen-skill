@@ -144,6 +144,22 @@ zkus v `launch.json` `"runtimeExecutable": "node"` a `"runtimeArgs": ["web/node_
   v prohlížeči a ten to přes obyčejné http (mimo localhost) nedovolí – přihlášení by nefungovalo.
 - CapRover: `npm run deploy-caprover` (vyžaduje nainstalovaný a přihlášený `caprover` CLI).
 
+## Další stránky (volitelné)
+- **Samostatné stránky:** `data/stranky/<adresa>.md` → `/stranka/<adresa>/` (vzpomínky, přepis rodinné knihy, historie
+  obce). Hlavička: `title`, `lead`, `zpet` (seznam `[url, popis]` pro drobečkovou navigaci) a `trasy` (mapa cest:
+  `[{jmeno, barva, body: [{lat, lon, nazev, popis}]}]`). Obrázky do `dokumenty/stranky/<adresa>/` → na web se zkopírují samy.
+  Odkazy na ně z osob a rodů: `web.json` → `stranky_k_osobam` (`{"<číslo>": [[url, popis]]}`), `stranky_k_rodum`
+  (`{"<slug rodu>": [[url, popis]]}`); v Dokumentech `stranky_v_dokumentech` (`[[url, popis]]`) a u sady
+  `stranky_k_sadam` (`{"<sada>": "<adresa>"}`).
+- **Dokumenty:** položky `data/dokumenty.json` s polem `"sada"` (např. „Rodokmen od strýce“) se na stránce `/dokumenty/`
+  seskupí; menu „Dokumenty“ se ukáže, jakmile je nějaký dokument.
+- **Malované stromy:** karty v `data/strom_*.json` (přímá linie: `generace` s `muz`/`zena` a `dite`; vývod:
+  `"typ": "vyvod"` a `osoby` podle čísel), `pozadi` = obrázek stromu v `dokumenty/stromy/`, znaky obcí
+  v `dokumenty/stromy/erby/erby.json`. Kreslí `tools/stromy.sh` (potřebuje Inkscape, písmo Linux Libertine a ImageMagick)
+  do `web/public/stromy/`. Na web: `web.json` → `"stromy": [{"soubor": "strom_linie_novaku", "nazev": "…", "popis": "…"}]`
+  (a případně `"stromy_poznamka"` s licencemi znaků). Karty se píšou ručně – po změně dat zkontroluj, že sedí jména a roky.
+- **Vějíř** na webu kreslí až 13 generací (11.–13. v tenkých prstencích, čitelné po přiblížení).
+
 ## Úpravy vzhledu
 Styly `web/src/styles/global.css` (barvy v `:root`), rozložení `web/src/layouts/Base.astro`, stránky `web/src/pages/`.
 Barvy rodů jsou v `tools/export_web.py` (`LINE_COLORS`) a `tools/fan_chart.py` (`BASE`). Upravuj jen na přání uživatele

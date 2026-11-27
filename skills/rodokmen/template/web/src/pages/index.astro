@@ -78,5 +78,5 @@ const cards = config.zajimavosti_na_uvodu ?? [];
 
   <h2>Rodokmen</h2>
   <div class="fan-preview"><a class="cover" href="/vejir/" aria-label="Otevřít vějíř předků přes celou obrazovku"></a><Fragment set:html={fan} /></div>
-  <p><a class="btn" href="/vejir/">Otevřít vějíř předků přes celou obrazovku →</a> <a href="/predci/" style="margin-left:1rem">nebo seznam všech předků</a></p>
+  <p><a class="btn" href="/vejir/">Otevřít vějíř předků přes celou obrazovku →</a> <a href="/predci/" style="margin-left:1rem">nebo seznam všech předků</a>{(config.stromy ?? []).length > 0 && <a href="/stromy/" style="margin-left:1rem">malované stromy</a>}</p>
 </Base>

@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import RouteMap from '../../components/RouteMap.astro';
+
+export function getStaticPaths() {
+  const pages = import.meta.glob('../../generated/stranky/*.md', { eager: true });
+  return Object.entries(pages).map(([path, mod]) => ({
+    params: { slug: path.split('/').pop().replace(/\.md$/, '') },
+    props: { mod },
+  }));
+}
+const { mod } = Astro.props;
+const { Content, frontmatter } = mod;
+const back = frontmatter.zpet ?? [];
+---
+<Base title={frontmatter.title}>
+  {back.length > 0 && <p class="crumbs">{back.map(([url, label], i) => <>{i > 0 && ' · '}<a href={url}>{label}</a></>)}</p>}
+  <h1>{frontmatter.title}</h1>
+  {frontmatter.lead && <p class="lead">{frontmatter.lead}</p>}
+  {frontmatter.trasy && <RouteMap trasy={frontmatter.trasy} />}
+  <div class="prose"><Content /></div>
+</Base>

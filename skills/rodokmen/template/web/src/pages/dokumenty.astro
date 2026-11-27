@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import { docs, people, href, config } from '../lib/data.js';
+const pageOf = config.stranky_k_sadam ?? {};
+const sets = [];
+for (const d of docs) {
+  const key = d.set || 'Ostatní';
+  let s = sets.find((x) => x.name === key);
+  if (!s) sets.push((s = { name: key, items: [] }));
+  s.items.push(d);
+}
+const slugOf = (name) => name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+---
+<Base title="Dokumenty" wide>
+  <h1>Rodinné dokumenty</h1>
+  <p class="lead">Naskenované rodinné doklady, rodokmeny a dopisy. Klepnutím na obrázek ho otevřete v plné velikosti. Dokumenty jsou připojené i ke stránkám osob, kterých se týkají.</p>
+  {(config.stranky_v_dokumentech ?? []).length > 0 && (
+    <section id="samostatne-stranky">
+      <h2>Vzpomínky a celé texty</h2>
+      <ul>{config.stranky_v_dokumentech.map(([url, label]) => <li><a href={url}>{label}</a></li>)}</ul>
+    </section>
+  )}
+  <p>{sets.map((s, i) => <>{i > 0 && ' · '}<a href={`#${slugOf(s.name)}`}>{s.name}</a> <span class="muted">({s.items.length})</span></>)}</p>
+  {sets.map((s) => (
+    <section id={slugOf(s.name)}>
+      <h2>{s.name}</h2>
+      {pageOf[s.name] && <p><a class="btn" href={`/stranka/${pageOf[s.name]}/`}>Celý text s obrázky →</a></p>}
+      <div class="docs">
+        {s.items.map((d) => (
+          <figure>
+            <a href={`/img/${d.img}.jpg`} target="_blank" rel="noopener"><img src={`/img/${d.img}.jpg`} alt={d.caption} loading="lazy" /></a>
+            <figcaption>{d.caption}
+              {d.people.length > 0 && d.people.length <= 8 && <><br />{d.people.map((p, i) => <>{i > 0 && ', '}<a href={href.person(p)}>{people[p]?.name}</a></>)}</>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  ))}
+</Base>

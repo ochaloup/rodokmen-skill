@@ -107,7 +107,8 @@ Základní smyčka pro každou osobu:
    a u neúspěšného, jestli s dokladem, nebo jen orientačně (Pomocníci níže).
    **Zjevně související výskyt** po cestě (vzácné příjmení rodu, stejný dům, jméno z rodinného vyprávění) zapiš do
    výsledku se snímkem – je to stopa, ne doklad. Když se hledání zasekne, projdi deník právě kvůli takovým stopám.
-7. Spusť `python3 -I tools/kontrola.py` a oprav chyby.
+7. Spusť `python3 -I tools/kontrola.py` a oprav chyby. Změnil-li se údaj osoby, která má příběh, uprav příběh
+   a obnov otisk (`tools/pribehy.py otisk <číslo>`, `reference/pribehy.md` → Příběhy osob).
 
 Pravidla, která chrání kvalitu:
 - **Než něco ohlásíš jako nové, prohledej** `data/osoby.py`, `data/zaznamy.json` a `data/research_log.md`
@@ -191,6 +192,8 @@ Podrobně `reference/pribehy.md`. Tohle rodina na webu čte nejradši – nenech
   `python3 -I tools/napady.py` (svatby krátce před porodem, rod v jednom domě, dlouhověkost, epidemie…), ověř a napiš.
 - **„Příběh <hlavního rodu>“**: jakmile má hlavní rod ~5 doložených generací, nabídni ho. Koncept napiš **do chatu**
   ke schválení, pak `data/pribeh.md` a ve `web.json` menu, tlačítko a úvod.
+- **Příběhy osob** (`data/pribehy_osob.md`): krátké „Co o něm/ní víme“ na stránce každé doložené osoby; hlídá je
+  `tools/pribehy.py` (otisk dat), postup v `reference/pribehy.md`.
 
 ## Fáze 4 – Web
 Podrobně `reference/web.md`. Ve zkratce:

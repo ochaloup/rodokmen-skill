@@ -6,6 +6,22 @@ dá v repozitáři **Watch → Custom → Releases**.
 
 Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to podle souboru `VERZE`).
 
+## Fork ochaloup (nad 0.11.1, nevydáno)
+Nové
+- Příběhy osob: `data/pribehy_osob.md` → „Co o něm/ní víme“ na stránce osoby; `tools/pribehy.py` hlídá otiskem,
+  když se data osoby změní (hlásí `kontrola.py` i `npm run data`).
+- Samostatné stránky `data/stranky/*.md` → `/stranka/<adresa>/` (s mapou tras), odkazy na ně z osob, rodů a dokumentů.
+- Stránka Dokumenty (sady z `dokumenty.json`), volitelná sekce „Rodina a archiv“ (`data/rodina_a_archiv.md`) na Zajímavostech.
+- Malované stromy: `tools/strom_graficky.py` a `tools/stromy.sh`, stránka `/stromy/` podle `web.json` → `stromy`.
+- Vějíř na webu do 13. generace; datum aktualizace v patičce úvodní stránky.
+Opravy
+- Strom a mobilní strom u předka, který je v rodokmenu dvakrát (SAME), pokračují jeho rodiči.
+- `kontrola.py`: osoba zapsaná v `osoby.py` dvakrát (druhý zápis tiše přepíše první); rodič s číslem opačného pohlaví
+  (prohození otce a matky); čísla domů z pozemkových knih, kronik a literatury nehlásí jako bez zdroje.
+Návody
+- SOA Litoměřice: obrázkový server omezuje (429/503) – po jednom snímku s pauzou.
+- `docs/poznamky_z_projektu.md`: poznámky z dlouhého projektu (náměty pro další verze).
+
 ## 0.11.1 – 25. 11. 2026
 
 Opravná verze: drobné opravy nástrojů a nový pomocník pro skok na folio v knize.
