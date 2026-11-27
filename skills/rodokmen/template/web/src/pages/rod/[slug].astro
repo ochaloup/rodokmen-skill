@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import PersonLink from '../../components/PersonLink.astro';
 import Record from '../../components/Record.astro';
 import { lines, people, hypotheses, href, genName, statusClass, lineByK, config } from '../../lib/data.js';
+import site from '../../data/site.json';
 
 export function getStaticPaths() {
   return Object.keys(lines).map((slug) => ({ params: { slug } }));
@@ -12,6 +13,8 @@ const members = l.people.map((s) => ({ ...people[s], gen: l.gens[s] }));
 const gens = [...new Set(members.map((p) => p.gen))].sort((a, b) => a - b);
 const partnerLine = lineByK[l.k ^ 1];
 const extraPages = config.stranky_k_rodum?.[Astro.params.slug] ?? [];
+const rodPlaces = site.places.filter((pl) => !pl.hypothesis && pl.lines.some((x) => x.k === l.k))
+  .map((pl) => ({ ...pl, n: pl.lines.find((x) => x.k === l.k).people.length })).sort((a, b) => b.n - a.n);
 ---
 <Base title={`Rod ${l.name}`}>
   <p class="crumbs"><a href="/rody/">Rody</a></p>
@@ -24,6 +27,7 @@ const extraPages = config.stranky_k_rodum?.[Astro.params.slug] ?? [];
     )}
   </p>
   {extraPages.length > 0 && <p>{extraPages.map(([url, label]) => <><a class="btn" href={url}>{label} →</a> </>)}</p>}
+  {rodPlaces.length > 0 && <p class="small">Obce rodu: {rodPlaces.map((pl, i) => <>{i > 0 && ', '}<a href={`/misto/${pl.slug}/`}>{pl.name}</a></>)}</p>}
   <p class="small muted">Rodokmen je rozdělený do osmi rodů podle osmi pradědečků a prababiček – každý manželský pár proto patří do dvou sousedních rodů.</p>
 
   {gens.map((g) => (

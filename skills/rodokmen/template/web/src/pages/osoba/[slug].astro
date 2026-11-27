@@ -33,6 +33,9 @@ const extraPages = config.stranky_k_osobam?.[String(p.k)] ?? [];
   )}
   {p.story && <section class="story"><h2>Co o {p.sex === 'M' ? 'něm' : 'ní'} víme</h2><Fragment set:html={p.story} /></section>}
   {p.facts.length > 0 && <ul class="facts">{p.facts.map((f) => <li>{f}</li>)}</ul>}
+  {p.places?.length > 0 && (
+    <p class="small">Místa: {p.places.map((m, i) => <>{i > 0 && ', '}<a href={href.place(m.slug)}>{m.name}</a></>)}</p>
+  )}
   {p.note && <p class="note">{p.note}</p>}
   {extraPages.length > 0 && <p>{extraPages.map(([url, label]) => <><a class="btn" href={url}>{label} →</a> </>)}</p>}
 

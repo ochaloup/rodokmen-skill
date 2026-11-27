@@ -43,6 +43,8 @@ Najdeš v ní `tools/` (nástroje), `template/` (šablona projektu a webu) a `re
      podle `reference/web.md` → Aktualizace staršího projektu. Odmítne-li, připomeň to až příště. Po aktualizaci ať
      uživatel restartuje Claude Code (změny v `.claude/settings.json` se jinak nemusí projevit). Hlásí-li výpis
      „Hlídač sítě: vypnutý“, zeptej se, jestli ho zapnout (`--hlidac`, vysvětlení v `reference/instalace.md`).
+     Po aktualizaci spusť `python3 -I tools/aron_img.py odkazy`: odkazy na ARON z dřívějších verzí otevírají knihu na
+     prvním snímku – opraví je `… odkazy --opravit`.
    - Hlídač sítě kontrolu zamítne (starší projekt) → spusť ji přes brzdu: `python3 -I tools/slusne.py SKILL_DIR/tools/verze.py <složka projektu>`.
 2. Projekt ještě není → **Fáze 0**.
 
@@ -125,6 +127,9 @@ Pravidla, která chrání kvalitu:
   „bey Hohenelbe“ = u Vrchlabí).
 - U úředníků, vojáků, lékařů, učitelů, farářů zkus noviny a ročenky (`portaly.md` → Noviny); pro 17. století soupis
   poddaných 1651, berní rulu a gruntovní knihy (`portaly.md` → Starší prameny) – matriky před ~1650 skoro nejsou.
+- **Když matrika nestačí** (původ přistěhovalce či vojáka, chybějící rodiče): písemnosti vrchnosti – soupisy poddaných,
+  svatební smlouvy, sirotčí a pozůstalostní spisy (fond „Velkostatek <panství>“); u mlynářů karta mlýna na vodnimlyny.cz;
+  zemské desky jen u svobodníků a majitelů statků (`reference/portaly.md` → Starší prameny).
 - **Spornou věc**, kterou nerozhodneš (dvě čtení, dva kandidáti), ukaž uživateli s výřezem a nech ho rozhodnout; do té
   doby `prob`. Desítky sporných čtení po velkém kole nedávej do chatu po jednom: sesbírej je do
   `pracovni/sporna_cteni.json` (klíč zápisu, výřez, otázka, možnosti, tvůj návrh) a udělej jednu stránku, kde
@@ -244,7 +249,7 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 ## Nástroje (`tools/`, z kořene projektu `python3 -I tools/<nástroj>`, skripty `.sh` přes `bash`; přepínače vypíše `--help`)
 | Nástroj | K čemu |
 |---|---|
-| `aron_search.py`, `aron_img.py` | ARON (SOA Zámrsk): hledání svazků; snímek, trvalý odkaz, zápis svazku |
+| `aron_search.py`, `aron_img.py` | ARON (SOA Zámrsk): hledání svazků; snímek, trvalý odkaz, zápis svazku; `aron_img.py odkazy [--opravit]` opraví staré odkazy, které otevřou první snímek |
 | `portafontium.py` | SOA Plzeň (Porta fontium) bez prohlížeče |
 | `ebadatelna.py` | SOA Praha: trvalý odkaz, náhled a výřez ze snímku uloženého z prohlížeče (stahovat nesmí) |
 | `ahmp_search.sh`, `ahmp_scan.py` | matriky Prahy (AHMP) – jen do 30. 11. 2026, pak prohlížeč (`portaly.md`) |
@@ -261,6 +266,6 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 | `zapis.py` | zápis do `data/*.json` a odkazů `r` v `osoby.py` beze změny formátu |
 | `mista.py` | místa pro mapu (OpenStreetMap) |
 | `napady.py` | náměty na zajímavosti z dat |
-| `kontrola.py` | kontrola dat; hlásí i citlivé údaje na webu a kdy psát příběh |
+| `kontrola.py` | kontrola dat; hlásí i citlivé údaje na webu, časovou návaznost (narození, sňatky, úmrtí) a kdy psát příběh |
 | `slusne.py` | brzda proti zablokování archivem (`stav`, `zastav`, `odblokuj`) |
 | `export_web.py`, `fan_chart.py` | data → web (volá ho `npm run data`); vějíř jako plakát k tisku |

@@ -2,7 +2,7 @@
 
 Web je statický (Astro + vyhledávání Pagefind), data bere z `data/` přes `tools/export_web.py`.
 Stránky: úvod (lákadlo, statistiky, zajímavosti, mapa, rody, vějíř), příběh, zajímavosti, rody, stránka rodu,
-mapa (OpenStreetMap), vějíř přes celou obrazovku s hledáním, seznam předků, zápisy (s výřezem, rámečkem, přepisem
+mapa (OpenStreetMap; název obce v bublině vede na stránku místa s časovou osou lidí a událostí v obci), vějíř přes celou obrazovku s hledáním, seznam předků, zápisy (s výřezem, rámečkem, přepisem
 a překladem), stránka osoby, rodiny, „Co hledáme“, výzkumný deník, hledání.
 
 ## Příkazy (ve složce `web/`)
@@ -158,12 +158,24 @@ zkus v `launch.json` `"runtimeExecutable": "node"` a `"runtimeArgs": ["web/node_
   v `dokumenty/stromy/erby/erby.json`. Kreslí `tools/stromy.sh` (potřebuje Inkscape, písmo Linux Libertine a ImageMagick)
   do `web/public/stromy/`. Na web: `web.json` → `"stromy": [{"soubor": "strom_linie_novaku", "nazev": "…", "popis": "…"}]`
   (a případně `"stromy_poznamka"` s licencemi znaků). Karty se píšou ručně – po změně dat zkontroluj, že sedí jména a roky.
+- **Obce:** každá obec z mapy má stránku `/misto/<obec>/` s časovou osou lidí a událostí (bez položky v menu); přehled
+  `/mista/` je odkazovaný z úvodu a mapy, obce rodu jsou na stránce rodu, obce osoby na stránce osoby.
+- **Strom předků** `/strom/` (výchozí osoba vlevo, generace se rozbalují) – bez položky v menu, odkaz z vějíře a z Malovaných stromů.
 - **Vějíř** na webu kreslí až 13 generací (11.–13. v tenkých prstencích, čitelné po přiblížení).
 
 ## Úpravy vzhledu
 Styly `web/src/styles/global.css` (barvy v `:root`), rozložení `web/src/layouts/Base.astro`, stránky `web/src/pages/`.
 Barvy rodů jsou v `tools/export_web.py` (`LINE_COLORS`) a `tools/fan_chart.py` (`BASE`). Upravuj jen na přání uživatele
 a po úpravě zkontroluj web na mobilu i počítači.
+
+## Vějíř na webu – plynulý posun a přibližování
+Stránka `/vejir/` je jedno SVG; u velkého vějíře (stovky jmen) by se při posunu a přibližování sekalo. Proto má
+hardwarovou akceleraci jako mapové aplikace (`web/src/lib/fanview.ts`, výpočty a testy v `fanmath.ts`): během pohybu
+grafická karta posouvá připravený obraz, po zastavení se dokreslí ostrý výřez v rozlišení obrazovky.
+- Výchozí `auto`: zapne se jen u velkých vějířů (od `AUTO_MIN_TEXTS` textů), malý vějíř (5–7 generací) jede bez ní.
+- Vynutit: `data/web.json` → `"vejir": { "akcelerace": true }` nebo `false`, pak `npm run data && npm run build`.
+- Vyzkoušet bez přestavění webu: adresa `/vejir/?akcelerace=1`, `=0` nebo `=auto`.
+- Testy výpočtů: ve `web/` `npm test`.
 
 ## Vějíř jako plakát
 `python3 -I tools/fan_chart.py vystupy/` → SVG a HTML (a PNG, je-li nainstalovaný Google Chrome, na Windows i Microsoft Edge) k tisku.

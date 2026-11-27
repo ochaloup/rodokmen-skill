@@ -6,6 +6,14 @@ dá v repozitáři **Watch → Custom → Releases**.
 
 Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to podle souboru `VERZE`).
 
+## Fork ochaloup – úpravy z PR původního skillu (nevydáno)
+- #22 ARON: odkaz na snímek otevře správný snímek (id TILE), `aron_img.py odkazy [--opravit]` opraví staré odkazy.
+- #76 `kontrola.py` hlídá časovou návaznost narození, sňatků a úmrtí (`tools/chronologie.py`, pole `overeno`).
+- #55 Vějíř: hardwarově zrychlený posun a přibližování u velkých vějířů (sloučeno s ovládáním z #165 a přiblížením 1:400).
+- #73 Stránka obce s časovou osou `/misto/<obec>/`, odkaz z mapy a osoby; navíc přehled `/mista/` z úvodu, mapy a rodů (bez menu).
+- #20 Strom předků `/strom/` (rozbalovací, i pro předky uvedené dvakrát) – odkaz z vějíře a Malovaných stromů, bez menu.
+- #62 a #249 návody: písemnosti vrchnosti, zemské desky, vodnimlyny.cz; FamilySearch ve vestavěném prohlížeči, sčítání lidu, metodika.
+
 ## Fork ochaloup (nad 0.11.1, nevydáno)
 Nové
 - Příběhy osob: `data/pribehy_osob.md` → „Co o něm/ní víme“ na stránce osoby; `tools/pribehy.py` hlídá otiskem,

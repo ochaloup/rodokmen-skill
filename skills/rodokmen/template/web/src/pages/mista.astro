@@ -1,0 +1,28 @@
+---
+// Přehled obcí (bez položky v menu – odkaz z úvodu, mapy a stránek rodů): každá obec vede na stránku s časovou osou.
+import Base from '../layouts/Base.astro';
+import site from '../data/site.json';
+import { lineByK } from '../lib/data.js';
+const count = (pl) => pl.lines.reduce((s, l) => s + l.people.length, 0);
+const places = site.places.filter((pl) => !pl.hypothesis).sort((a, b) => count(b) - count(a) || a.name.localeCompare(b.name, 'cs'));
+---
+<Base title="Obce předků">
+  <p class="crumbs"><a href="/mapa/">Mapa</a></p>
+  <h1>Obce předků</h1>
+  <p class="lead">Každá obec má svou stránku s časovou osou: kdo tu žil, kdy se tu kdo narodil, oženil a zemřel. Seřazeno podle počtu předků.</p>
+  <ul class="places">
+    {places.map((pl) => (
+      <li>
+        <a href={`/misto/${pl.slug}/`}>{pl.name}</a>
+        <span class="small muted"> · {count(pl)} {count(pl) === 1 ? 'osoba' : count(pl) < 5 ? 'osoby' : 'osob'}{pl.years && ` · ${pl.years[0]}–${pl.years[1]}`}</span>
+        {pl.lines.filter((l) => lineByK[l.k]).map((l) => <span class="dot" style={`background:${lineByK[l.k].color}`} title={lineByK[l.k].name} />)}
+      </li>
+    ))}
+  </ul>
+</Base>
+
+<style>
+  .places { columns: 2 18rem; padding-left: 1.2rem; }
+  .places li { break-inside: avoid; margin: 0.2rem 0; }
+  .dot { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; margin-left: 0.3rem; vertical-align: middle; }
+</style>
